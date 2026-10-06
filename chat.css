@@ -2,3 +2,13 @@
 @media(prefers-reduced-motion:no-preference){.conversation-item,.primary{transition:background .15s}dialog[open]{animation:appear .15s ease-out}@keyframes appear{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:none}}}
 
 #details-toggle{font-size:15px;font-weight:700;width:30px;height:30px;border:1px solid #dbe5dd;border-radius:50%}
+
+.gt-site-settings details{border-top:1px solid #dce5df;margin-top:18px;padding-top:14px}.gt-site-settings summary{cursor:pointer;font-weight:650;margin-bottom:14px}.gt-site-settings .gt-check{display:flex;gap:10px;align-items:center}.gt-site-settings input[type=checkbox]{width:18px;margin:0}.gt-hours{display:grid;grid-template-columns:1fr 100px 100px;gap:8px;align-items:center}.gt-question{padding:10px 0;border-bottom:1px solid #e5ebe8}.gt-site-settings textarea{width:100%;padding:10px;border:1px solid #d9e4db;border-radius:8px;font:inherit}.gt-site-settings .muted{font-size:12px;color:#64776c;line-height:1.5}@media(max-width:500px){.gt-hours{grid-template-columns:1fr 80px 80px}}
+
+.login-logo{width:165px;height:165px;object-fit:contain}.logo-link{background:transparent!important;width:58px!important;height:58px!important;padding:2px!important}.logo-link img{width:100%;height:100%;object-fit:contain}.login-brand{padding-top:12px}
+
+dialog.settings-dialog{max-width:720px;max-height:90dvh;overflow:auto}fieldset{border:0;margin:0;padding:0;min-width:0}.typing-status{color:var(--muted);font-size:12px}.message.system .message-bubble{background:#f0f4f1;border-style:dashed}.message.system .message-label:after{content:'Automatic reply';font-size:9px}
+
+.empty-logo{width:140px;height:140px;object-fit:contain;margin-bottom:24px}
+
+label.gt-check{display:flex;gap:10px;align-items:center}label.gt-check input{width:auto;margin:0;flex:none}
