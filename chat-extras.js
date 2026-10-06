@@ -1,0 +1,11 @@
+// Safe message links and optional, device-local notification sounds.
+(()=>{
+ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+ function links(body){const re=/\[([^\]\n]{1,160})\]\((https?:\/\/[^\s)]+)\)|https?:\/\/[^\s<>]+|\b(?:[a-z0-9](?:[a-z0-9-]*[a-z0-9])?\.)+[a-z]{2,24}(?:\/[^\s<>]*)?/gi;let out='',offset=0;for(const m of String(body).matchAll(re)){const raw=(m[2]||m[0]).replace(/[.,!?;:]+$/,'');let u;try{u=new URL(/^https?:/i.test(raw)?raw:'https://'+raw);}catch{continue;}if(!['http:','https:'].includes(u.protocol)||u.username||u.password)continue;out+=esc(body.slice(offset,m.index))+`<a href="${esc(u.href)}" target="_blank" rel="noopener noreferrer">${esc(m[1]||raw)}</a>`+(!m[2]?esc(m[0].slice(raw.length)):'');offset=m.index+m[0].length;}return out+esc(body.slice(offset));}
+ function sound(storageKey){let ctx,prefs={enabled:false,volume:35,tone:'soft'};try{prefs={...prefs,...JSON.parse(localStorage.getItem(storageKey)||'{}')};}catch{}
+ const unlock=()=>{try{const Audio=window.AudioContext||window.webkitAudioContext;if(!Audio)return;ctx=ctx||new Audio();if(ctx.state==='suspended')ctx.resume().catch(()=>{});}catch{}};
+ const play=(preview=false)=>{if(!preview&&!prefs.enabled||document.hidden||Number(prefs.volume)<=0)return;try{if(preview)unlock();if(!ctx||ctx.state!=='running')return;const t=ctx.currentTime;const notes=prefs.tone==='bright'?[660,880]:[520,620];notes.forEach((hz,i)=>{const oscillator=ctx.createOscillator(),gain=ctx.createGain();oscillator.type='sine';oscillator.frequency.value=hz;gain.gain.setValueAtTime(0,t+i*.12);gain.gain.linearRampToValueAtTime(Math.max(.001,Math.min(1,Number(prefs.volume)/100))*.16,t+i*.12+.015);gain.gain.exponentialRampToValueAtTime(.001,t+i*.12+.17);oscillator.connect(gain);gain.connect(ctx.destination);oscillator.start(t+i*.12);oscillator.stop(t+i*.12+.19);});}catch{}};
+ document.addEventListener('pointerdown',unlock,{passive:true});document.addEventListener('keydown',unlock,{passive:true});return {get:()=>({...prefs}),set:p=>{prefs={...prefs,...p};try{localStorage.setItem(storageKey,JSON.stringify(prefs));}catch{}unlock();},play};
+ }
+ window.ChatExtras={links,sound};
+})();

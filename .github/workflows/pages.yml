@@ -30,7 +30,7 @@ jobs:
           let publicKey=key.startsWith('sb_publishable_');if(!publicKey){try{publicKey=JSON.parse(Buffer.from(key.split('.')[1],'base64url')).role==='anon';}catch{}}
           if(!publicKey)throw new Error('SUPABASE_ANON_KEY must be a publishable key or legacy anon key. Never use service_role or secret keys.');
           const publicUrl=new URL(process.env.CHAT_PUBLIC_URL||'https://chat.georgetech.uk');if(publicUrl.protocol!=='https:'||publicUrl.pathname!=='/'||publicUrl.search||publicUrl.hash||publicUrl.username||publicUrl.password)throw new Error('CHAT_PUBLIC_URL must be an HTTPS origin.');
-          await rm('dist',{recursive:true,force:true});await mkdir('dist');for(const name of ['index.html','chat.js','chat.css','widget.js','sw.js','manifest.webmanifest','icons','vendor','georgetech-logo.png','site-settings-ui.js'])await cp(name,'dist/'+name,{recursive:true});
+          await rm('dist',{recursive:true,force:true});await mkdir('dist');for(const name of ['index.html','chat.js','chat.css','widget.js','sw.js','manifest.webmanifest','icons','vendor','georgetech-logo.png','site-settings-ui.js','settings-layout.css','chat-extras.js'])await cp(name,'dist/'+name,{recursive:true});
           const api_url=url+'/functions/v1/georgetech-chat';
           await writeFile('dist/config.json',JSON.stringify({supabase_url:url,supabase_anon_key:key,api_url}));
           const widget=await readFile('widget.js','utf8');await writeFile('dist/widget.js',widget.replace("'__GT_API_URL__'",JSON.stringify(api_url)).replace("'__GT_PUBLIC_KEY__'",JSON.stringify(key)));
