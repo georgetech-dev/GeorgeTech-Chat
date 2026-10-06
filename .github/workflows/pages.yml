@@ -1,0 +1,56 @@
+name: Publish Chat interface
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+concurrency:
+  group: chat-pages
+  cancel-in-progress: true
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Build public Chat files
+        env:
+          SUPABASE_URL: ${{ vars.SUPABASE_URL }}
+          SUPABASE_ANON_KEY: ${{ vars.SUPABASE_ANON_KEY }}
+          CHAT_PUBLIC_URL: ${{ vars.CHAT_PUBLIC_URL }}
+        run: |
+          node --input-type=module <<'BUILD'
+          import {cp,mkdir,readFile,writeFile,rm} from 'node:fs/promises';
+          const url=process.env.SUPABASE_URL?.replace(/\/$/,'');const key=process.env.SUPABASE_ANON_KEY;
+          if(!url||!key)throw new Error('Set SUPABASE_URL and SUPABASE_ANON_KEY repository variables first.');
+          const u=new URL(url);if(u.protocol!=='https:'||!u.hostname.endsWith('.supabase.co')||u.pathname!=='/'||u.search||u.hash||u.username||u.password)throw new Error('Use https://PROJECT.supabase.co as SUPABASE_URL.');
+          let publicKey=key.startsWith('sb_publishable_');if(!publicKey){try{publicKey=JSON.parse(Buffer.from(key.split('.')[1],'base64url')).role==='anon';}catch{}}
+          if(!publicKey)throw new Error('SUPABASE_ANON_KEY must be a publishable key or legacy anon key. Never use service_role or secret keys.');
+          const publicUrl=new URL(process.env.CHAT_PUBLIC_URL||'https://chat.georgetech.uk');if(publicUrl.protocol!=='https:'||publicUrl.pathname!=='/'||publicUrl.search||publicUrl.hash||publicUrl.username||publicUrl.password)throw new Error('CHAT_PUBLIC_URL must be an HTTPS origin.');
+          await rm('dist',{recursive:true,force:true});await mkdir('dist');for(const name of ['index.html','chat.js','chat.css','widget.js','sw.js','manifest.webmanifest','icons','vendor'])await cp(name,'dist/'+name,{recursive:true});
+          const api_url=url+'/functions/v1/georgetech-chat';
+          await writeFile('dist/config.json',JSON.stringify({supabase_url:url,supabase_anon_key:key,api_url}));
+          const widget=await readFile('widget.js','utf8');await writeFile('dist/widget.js',widget.replace("'__GT_API_URL__'",JSON.stringify(api_url)).replace("'__GT_PUBLIC_KEY__'",JSON.stringify(key)));
+          await writeFile('dist/CNAME',publicUrl.hostname+'\n');await writeFile('dist/.nojekyll','');
+          console.log('Built Chat static files in dist/. Only this directory is published.');
+          BUILD
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v4
+        with:
+          path: dist
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    permissions:
+      pages: write
+      id-token: write
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy
+        id: deployment
+        uses: actions/deploy-pages@v4
