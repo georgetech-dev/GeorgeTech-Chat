@@ -1,7 +1,7 @@
 (()=>{
  let deferred=null,busy=false,confirmed=false;
  const display=matchMedia('(display-mode: standalone), (display-mode: fullscreen), (display-mode: minimal-ui)');
- const launched=()=>display.matches||navigator.standalone===true;
+ const launched=()=>Boolean(window.ChatAndroid?.available)||display.matches||navigator.standalone===true;
  const sheet=document.createElement('dialog');sheet.id='install-sheet';sheet.className='install-sheet';sheet.setAttribute('aria-labelledby','install-heading');document.body.append(sheet);
  const icon=name=>window.ChatIcons.svg(name);
  function paint(){const installed=launched()||confirmed;document.documentElement.classList.toggle('app-installed',installed);document.querySelectorAll('[data-install]').forEach(button=>{button.hidden=installed;button.disabled=busy;});}
